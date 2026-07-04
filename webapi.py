@@ -89,4 +89,5 @@ def build_app() -> web.Application:
     app = web.Application()
     app.router.add_post("/api/state", api_state)
     app.router.add_post("/api/action", api_action)
-    app.router.add_static("/", path=
+    app.router.add_static("/", path=WEBAPP_DIR, name="webapp", show_index=True)
+    return app
