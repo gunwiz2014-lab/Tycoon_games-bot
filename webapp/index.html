@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lemon Tycoon</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: var(--tg-theme-bg-color, #fdf6e3);
+    --text: var(--tg-theme-text-color, #2b2b2b);
+    --hint: var(--tg-theme-hint-color, #999);
+    --button: var(--tg-theme-button-color, #f4c542);
+    --button-text: var(--tg-theme-button-text-color, #202020);
+    --card: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 12px;
+    padding-bottom: 90px;
+  }
+  h1 { font-size: 20px; margin: 4px 0 12px; text-align: center; }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .stat-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 10px 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .stat-card .label { font-size: 12px; color: var(--hint); }
+  .stat-card .value { font-size: 18px; font-weight: 700; }
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 4px;
+    border-radius: 12px;
+    background: var(--card);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .tab.active { border-color: var(--button); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .card h3 { margin: 0 0 6px; font-size: 15px; }
+  .card p { margin: 2px 0; font-size: 13px; color: var(--hint); }
+  button.action {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 12px;
+    background: var(--button);
+    color: var(--button-text);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  button.action:active { opacity: 0.8; }
+  .shop-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .shop-item:last-child { border-bottom: none; }
+  .shop-buy {
+    background: var(--button);
+    color: var(--button-text);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  #toast {
+    position: fixed;
+    bottom: 14px;
+    left: 12px;
+    right: 12px;
+    background: #202020;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 0.95; }
+</style>
+</head>
+<body>
+
+<h1>🍋 Lemon Tycoon</h1>
+
+<div class="stats">
+  <div class="stat-card"><div class="label">🪙 Монеты</div><div class="value" id="s-coins">–</div></div>
+  <div class="stat-card"><div class="label">💎 Гемы</div><div class="value" id="s-gems">–</div></div>
+  <div class="stat-card"><div class="label">🍋 Лимоны</div><div class="value" id="s-lemons">–</div></div>
+  <div class="stat-card"><div class="label">⛰ Руда</div><div class="value" id="s-ore">–</div></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="farm">🏭 Ферма</div>
+  <div class="tab" data-tab="mine">⛏ Майнинг</div>
+  <div class="tab" data-tab="shop">🛒 Магазин</div>
+</div>
+
+<div class="panel active" id="panel-farm">
+  <div class="card">
+    <h3>Завод лимонов — уровень <span id="farm-level">1</span></h3>
+    <p>Производство: <span id="farm-rate">0</span> 🍋/час</p>
+    <p>Рабочих: <span id="farm-workers">0</span></p>
+    <p>Готово к сбору: <b><span id="farm-pending">0</span></b> 🍋</p>
+    <button class="action" onclick="doAction('farm_collect')">🌾 Собрать лимоны</button>
+    <button class="action" onclick="doAction('farm_upgrade')">⬆️ Улучшить завод (<span id="farm-upgrade-cost">–</span> 🪙)</button>
+    <button class="action" onclick="doAction('farm_hire')">👷 Нанять рабочего</button>
+    <button class="action" onclick="doAction('farm_sell')">💰 Продать все лимоны</button>
+  </div>
+</div>
+
+<div class="panel" id="panel-mine">
+  <div class="card">
+    <h3>Шахта — кирка уровня <span id="miner-level">1</span></h3>
+    <p>⚡ Энергия: <span id="energy">0</span>/<span id="max-energy">0</span></p>
+    <p>Авто-майнеров: <span id="auto-miners">0</span>, готово к сбору: <span id="mine-pending">0</span> руды</p>
+    <button class="action" onclick="doAction('mine_click')">⛏ Копнуть</button>
+    <button class="action" onclick="doAction('mine_collect_auto')">📦 Забрать с авто-майнеров</button>
+    <button class="action" onclick="doAction('mine_upgrade')">⬆️ Улучшить кирку (<span id="miner-upgrade-cost">–</span> 🪙)</button>
+    <button class="action" onclick="doAction('mine_sell')">💰 Продать всю руду</button>
+  </div>
+</div>
+
+<div class="panel" id="panel-shop">
+  <div class="card">
+    <h3>За монеты 🪙</h3>
+    <div id="shop-coin-list"></div>
+  </div>
+  <div class="card">
+    <h3>За гемы 💎</h3>
+    <div id="shop-gem-list"></div>
+  </div>
+  <div class="card">
+    <h3>⭐ Купить гемы за Telegram Stars</h3>
+    <p>Открой бота и нажми «🛒 Магазин» → «Купить гемы за Stars» — оплата звёздами доступна только в чате с ботом.</p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+const initData = tg.initData || "";
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+  });
+});
+
+async function fetchState() {
+  const res = await fetch("/api/state", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ initData }),
+  });
+  if (!res.ok) {
+    toast("Ошибка авторизации. Открой мини-приложение через бота.");
+    return;
+  }
+  const s = await res.json();
+  render(s);
+}
+
+function render(s) {
+  document.getElementById("s-coins").textContent = s.coins;
+  document.getElementById("s-gems").textContent = s.gems;
+  document.getElementById("s-lemons").textContent = s.lemons;
+  document.getElementById("s-ore").textContent = s.ore;
+
+  document.getElementById("farm-level").textContent = s.farm_level;
+  document.getElementById("farm-rate").textContent = s.farm_rate;
+  document.getElementById("farm-workers").textContent = s.farm_workers;
+  document.getElementById("farm-pending").textContent = s.pending_lemons;
+  document.getElementById("farm-upgrade-cost").textContent = s.next_farm_upgrade_cost ?? "MAX";
+
+  document.getElementById("miner-level").textContent = s.miner_level;
+  document.getElementById("energy").textContent = s.energy;
+  document.getElementById("max-energy").textContent = s.max_energy;
+  document.getElementById("auto-miners").textContent = s.auto_miners;
+  document.getElementById("mine-pending").textContent = s.pending_ore;
+  document.getElementById("miner-upgrade-cost").textContent = s.next_miner_upgrade_cost ?? "MAX";
+
+  const coinList = document.getElementById("shop-coin-list");
+  coinList.innerHTML = "";
+  s.shop_coin_items.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "shop-item";
+    row.innerHTML = `<span>${item.title}</span><button class="shop-buy">${item.price}🪙</button>`;
+    row.querySelector("button").onclick = () => buyItem("buy_coin", item.id);
+    coinList.appendChild(row);
+  });
+
+  const gemList = document.getElementById("shop-gem-list");
+  gemList.innerHTML = "";
+  s.shop_gem_items.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "shop-item";
+    row.innerHTML = `<span>${item.title}</span><button class="shop-buy">${item.price}💎</button>`;
+    row.querySelector("button").onclick = () => buyItem("buy_gem", item.id);
+    gemList.appendChild(row);
+  });
+}
+
+async function doAction(action) {
+  tg.HapticFeedback?.impactOccurred("light");
+  const res = await fetch("/api/action", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ initData, action }),
+  });
+  const r = await res.json();
+  if (r.ok === false) {
+    toast(r.reason === "no_coins" ? `Не хватает монет (нужно ${r.cost})` :
+          r.reason === "no_energy" ? "Не хватает энергии" :
+          r.reason === "max_level" ? "Максимальный уровень" :
+          r.reason === "max_workers" ? "Максимум рабочих" : "Не получилось");
+  } else {
+    toast("Готово ✅");
+  }
+  fetchState();
+}
+
+async function buyItem(action, item_id) {
+  const res = await fetch("/api/action", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ initData, action, item_id }),
+  });
+  const r = await res.json();
+  if (r.ok === false) {
+    toast(r.reason === "no_coins" ? `Не хватает монет (нужно ${r.cost})` :
+          r.reason === "no_gems" ? `Не хватает гемов (нужно ${r.cost})` : "Не получилось");
+  } else {
+    toast("Куплено ✅");
+  }
+  fetchState();
+}
+
+fetchState();
+setInterval(fetchState, 15000);
+</script>
+</body>
+  </html>
