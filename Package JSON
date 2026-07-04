@@ -1,0 +1,15 @@
+```json
+{
+  "name": "tg-text-tycoon-bot",
+  "version": "1.0.0",
+  "description": "Telegram Multi-Tycoon Text Bot with real Telegram Stars payment integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "telegraf": "^4.16.3"
+  }
+}
+
+```
