@@ -27,6 +27,14 @@ async def farm_menu_msg(message: Message):
     await message.answer(text, reply_markup=markup)
 
 
+@router.callback_query(F.data == "farm_tap")
+async def farm_tap(call: CallbackQuery):
+    res = await gl.tap_lemon(call.from_user.id)
+    await call.answer(f"+{res['gained']} 🍋")
+    text, markup = await _render_farm(call.from_user.id)
+    await call.message.edit_text(text, reply_markup=markup)
+
+
 @router.callback_query(F.data == "farm_collect")
 async def farm_collect(call: CallbackQuery):
     res = await gl.collect_farm(call.from_user.id)

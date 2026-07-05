@@ -1,6 +1,6 @@
 from aiogram import Router
 
-from . import start, farm, mining, shop, payments, space, boss, daily, group
+from . import start, farm, mining, shop, payments, space, boss, daily, group, trade, quests
 
 
 def get_root_router() -> Router:
@@ -9,8 +9,10 @@ def get_root_router() -> Router:
     root.include_router(farm.router)
     root.include_router(mining.router)
     root.include_router(space.router)
+    root.include_router(trade.router)
     root.include_router(boss.router)
     root.include_router(daily.router)
+    root.include_router(quests.router)
     root.include_router(shop.router)
     root.include_router(payments.router)
     root.include_router(group.router)
