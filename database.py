@@ -1,9 +1,12 @@
+import os
 import time
 import aiosqlite
 
 import config
 
-DB_PATH = "game.db"
+# DB_PATH можно переопределить через переменную окружения, чтобы хранить базу
+# на постоянном Railway Volume (иначе при каждом деплое прогресс будет стираться)
+DB_PATH = os.getenv("DB_PATH", "game.db")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -23,7 +26,25 @@ CREATE TABLE IF NOT EXISTS users (
     last_farm_collect INTEGER NOT NULL DEFAULT 0,
     last_mine_collect INTEGER NOT NULL DEFAULT 0,
     last_energy_tick INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL DEFAULT 0
+    created_at INTEGER NOT NULL DEFAULT 0,
+    space_level INTEGER NOT NULL DEFAULT 1,
+    space_crew INTEGER NOT NULL DEFAULT 0,
+    stardust INTEGER NOT NULL DEFAULT 0,
+    last_space_collect INTEGER NOT NULL DEFAULT 0,
+    daily_streak INTEGER NOT NULL DEFAULT 0,
+    last_daily_claim INTEGER NOT NULL DEFAULT 0,
+    boss_id TEXT NOT NULL DEFAULT '',
+    boss_hp INTEGER NOT NULL DEFAULT 0,
+    boss_date TEXT NOT NULL DEFAULT '',
+    trade_level INTEGER NOT NULL DEFAULT 0,
+    trade_outlets INTEGER NOT NULL DEFAULT 0,
+    last_trade_collect INTEGER NOT NULL DEFAULT 0,
+    lifetime_lemons INTEGER NOT NULL DEFAULT 0,
+    lifetime_ore INTEGER NOT NULL DEFAULT 0,
+    lifetime_dust INTEGER NOT NULL DEFAULT 0,
+    boss_kills INTEGER NOT NULL DEFAULT 0,
+    quests_claimed TEXT NOT NULL DEFAULT '',
+    vip INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS purchases (
@@ -33,6 +54,19 @@ CREATE TABLE IF NOT EXISTS purchases (
     currency TEXT NOT NULL,
     amount INTEGER NOT NULL,
     created_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS group_members (
+    chat_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    username TEXT,
+    joined_at INTEGER NOT NULL,
+    PRIMARY KEY (chat_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS user_groups (
+    user_id INTEGER PRIMARY KEY,
+    in_group_count INTEGER NOT NULL DEFAULT 0
 );
 """
 
@@ -94,3 +128,43 @@ async def get_user(user_id: int) -> dict | None:
         cur = await db.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
         row = await cur.fetchone()
         return dict(row) if row else None
+
+
+async def register_group_member(chat_id: int, user_id: int, username: str | None):
+    now = int(time.time())
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            """INSERT INTO group_members (chat_id, user_id, username, joined_at)
+               VALUES (?, ?, ?, ?)
+               ON CONFLICT(chat_id, user_id) DO UPDATE SET username = excluded.username""",
+            (chat_id, user_id, username, now),
+        )
+        await db.execute(
+            """INSERT INTO user_groups (user_id, in_group_count) VALUES (?, 1)
+               ON CONFLICT(user_id) DO UPDATE SET in_group_count = in_group_count + 1""",
+            (user_id,),
+        )
+        await db.commit()
+
+
+async def is_user_in_any_group(user_id: int) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("SELECT in_group_count FROM user_groups WHERE user_id = ?", (user_id,))
+        row = await cur.fetchone()
+        return bool(row and row[0] > 0)
+
+
+async def get_group_leaderboard(chat_id: int, limit: int = 10) -> list[dict]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cur = await db.execute(
+            """SELECT u.username, u.coins, u.gems
+               FROM group_members gm
+               JOIN users u ON u.user_id = gm.user_id
+               WHERE gm.chat_id = ?
+               ORDER BY u.coins DESC
+               LIMIT ?""",
+            (chat_id, limit),
+        )
+        rows = await cur.fetchall()
+        return [dict(r) for r in rows]
