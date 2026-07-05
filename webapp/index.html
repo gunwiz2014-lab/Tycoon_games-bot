@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Lemon Tycoon</title>
+<title>Lemon Tycoon — Магазин</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #171a24;
@@ -16,16 +16,8 @@
     --text: #f2f3f7;
     --text-dim: #9198ab;
     --farm: #f4c542;
-    --farm-dim: #4a3f1e;
-    --mine: #8fa3ad;
-    --mine-dim: #34424a;
-    --space: #8b7cf6;
-    --space-dim: #362f5c;
-    --boss: #ef5b5b;
-    --boss-dim: #4a2626;
-    --daily: #4fd1a5;
-    --daily-dim: #1e4038;
     --gem: #6cc7ff;
+    --star: #ffd25f;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -33,141 +25,46 @@
     background: var(--bg);
     color: var(--text);
     font-family: 'Inter', -apple-system, sans-serif;
-    overscroll-behavior-y: none;
   }
-  h1, h2, h3, .display {
-    font-family: 'Baloo 2', 'Inter', sans-serif;
-  }
-  body { padding: 12px 12px 96px; }
+  h1, h2 { font-family: 'Baloo 2', sans-serif; }
+  body { padding: 14px 12px 40px; }
 
-  /* Top stat strip */
-  .topbar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
+  .topbar { display: flex; gap: 8px; margin-bottom: 16px; }
   .pill {
     flex: 1;
     background: var(--bg-elevated);
     border: 1px solid var(--card-border);
     border-radius: 14px;
-    padding: 8px 10px;
+    padding: 10px;
     text-align: center;
   }
-  .pill .n { font-family: 'Baloo 2'; font-weight: 700; font-size: 16px; }
+  .pill .n { font-family: 'Baloo 2'; font-weight: 700; font-size: 17px; }
   .pill .l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
 
-  /* Tab bar */
-  .tabbar {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    margin-bottom: 14px;
-    scrollbar-width: none;
-  }
-  .tabbar::-webkit-scrollbar { display: none; }
+  .tabbar { display: flex; gap: 6px; margin-bottom: 14px; }
   .tab {
-    flex: 0 0 auto;
-    padding: 9px 14px;
-    border-radius: 999px;
+    flex: 1;
+    text-align: center;
+    padding: 10px 4px;
+    border-radius: 12px;
     background: var(--bg-elevated);
     border: 1px solid var(--card-border);
     font-size: 13px;
     font-weight: 600;
-    white-space: nowrap;
     color: var(--text-dim);
-    transition: all 0.15s ease;
   }
-  .tab.active {
-    color: #14161e;
-    background: var(--tab-color, var(--farm));
-    border-color: transparent;
-  }
-
-  .panel { display: none; animation: fadein 0.2s ease; }
+  .tab.active { color: #14161e; background: var(--farm); border-color: transparent; }
+  .panel { display: none; }
   .panel.active { display: block; }
-  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
   .card {
     background: var(--card);
     border: 1px solid var(--card-border);
     border-radius: 18px;
-    padding: 18px;
+    padding: 16px;
     margin-bottom: 12px;
   }
-  .card h2 {
-    margin: 0 0 4px;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .card .sub { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
-
-  /* Signature element: liquid-fill gauge */
-  .gauge {
-    height: 22px;
-    border-radius: 999px;
-    background: var(--bg);
-    border: 1px solid var(--card-border);
-    overflow: hidden;
-    position: relative;
-    margin: 10px 0;
-  }
-  .gauge-fill {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, var(--fill-a), var(--fill-b));
-    transition: width 0.4s cubic-bezier(.34,1.56,.64,1);
-    position: relative;
-    overflow: hidden;
-  }
-  .gauge-fill::after {
-    content: "";
-    position: absolute; inset: 0;
-    background: repeating-linear-gradient(-45deg, rgba(255,255,255,0.12) 0 8px, transparent 8px 16px);
-    animation: slide 1.2s linear infinite;
-  }
-  @keyframes slide { from { transform: translateX(0); } to { transform: translateX(24px); } }
-  .gauge-label {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: #fff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-  }
-
-  .stat-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-dim); margin: 4px 0; }
-  .stat-row b { color: var(--text); font-weight: 600; }
-
-  button.action {
-    width: 100%;
-    padding: 13px;
-    margin-top: 8px;
-    border: none;
-    border-radius: 14px;
-    background: var(--btn, var(--farm));
-    color: #14161e;
-    font-weight: 700;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    transition: transform 0.08s ease;
-  }
-  button.action:active { transform: scale(0.97); }
-  button.action.ghost {
-    background: transparent;
-    border: 1px solid var(--card-border);
-    color: var(--text-dim);
-  }
-  button.action:disabled { opacity: 0.5; }
-
-  .locked {
-    text-align: center;
-    padding: 20px 10px;
-    color: var(--text-dim);
-    font-size: 14px;
-  }
-  .locked .lock-icon { font-size: 32px; margin-bottom: 8px; }
+  .card h2 { margin: 0 0 10px; font-size: 16px; }
 
   .shop-item {
     display: flex;
@@ -175,6 +72,7 @@
     align-items: center;
     padding: 11px 0;
     border-bottom: 1px solid var(--card-border);
+    gap: 10px;
   }
   .shop-item:last-child { border-bottom: none; }
   .shop-item .title { font-size: 13px; }
@@ -183,24 +81,38 @@
     color: #14161e;
     border: none;
     border-radius: 10px;
-    padding: 8px 13px;
+    padding: 9px 14px;
     font-weight: 700;
     font-size: 12px;
     white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .shop-buy.stars { background: var(--star); }
+
+  .stars-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--bg-elevated);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
   }
 
-  .streak-track { display: flex; gap: 4px; margin: 12px 0; }
-  .streak-day {
-    flex: 1;
-    aspect-ratio: 1;
-    border-radius: 8px;
-    background: var(--bg);
+  .support-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--bg-elevated);
     border: 1px solid var(--card-border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: var(--text-dim);
+    color: var(--text);
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 8px;
   }
-  .streak-day.done { background: var(--daily); color: #0e2620; border-color: transparent; }
-  .streak-day.current { border-color: var(--daily); color: var(--daily); }
 
   #toast {
     position: fixed;
@@ -217,7 +129,6 @@
     transform: translateY(8px);
     transition: all 0.25s ease;
     pointer-events: none;
-    z-index: 10;
   }
   #toast.show { opacity: 1; transform: translateY(0); }
 </style>
@@ -227,76 +138,14 @@
 <div class="topbar">
   <div class="pill"><div class="n">🪙 <span id="s-coins">–</span></div><div class="l">монеты</div></div>
   <div class="pill"><div class="n" style="color:var(--gem)">💎 <span id="s-gems">–</span></div><div class="l">гемы</div></div>
-  <div class="pill"><div class="n" style="color:var(--farm)">🍋 <span id="s-lemons">–</span></div><div class="l">лимоны</div></div>
-  <div class="pill"><div class="n" style="color:var(--mine)">⛰ <span id="s-ore">–</span></div><div class="l">руда</div></div>
 </div>
 
 <div class="tabbar">
-  <div class="tab active" data-tab="farm" style="--tab-color: var(--farm)">🍋 Ферма</div>
-  <div class="tab" data-tab="mine" style="--tab-color: var(--mine)">⛏ Шахта</div>
-  <div class="tab" data-tab="space" style="--tab-color: var(--space)">🚀 Космос</div>
-  <div class="tab" data-tab="boss" style="--tab-color: var(--boss)">👹 Босс</div>
-  <div class="tab" data-tab="daily" style="--tab-color: var(--daily)">🎁 Дейли</div>
-  <div class="tab" data-tab="shop" style="--tab-color: var(--farm)">🛒 Магазин</div>
+  <div class="tab active" data-tab="shop">🛒 Магазин</div>
+  <div class="tab" data-tab="support">🆘 Поддержка</div>
 </div>
 
-<!-- FARM -->
-<div class="panel active" id="panel-farm">
-  <div class="card">
-    <h2>🏭 Завод лимонов</h2>
-    <div class="sub">Уровень <span id="farm-level">1</span> · <span id="farm-rate">0</span> 🍋/час · рабочих <span id="farm-workers">0</span></div>
-    <div class="gauge"><div class="gauge-fill" id="farm-gauge" style="--fill-a: var(--farm-dim); --fill-b: var(--farm); width: 0%"></div><div class="gauge-label"><span id="farm-pending">0</span> 🍋 готово</div></div>
-    <button class="action" style="--btn: var(--farm)" onclick="doAction('farm_collect')">🌾 Собрать лимоны</button>
-    <button class="action ghost" onclick="doAction('farm_upgrade')">⬆️ Улучшить завод — <span id="farm-upgrade-cost">–</span> 🪙</button>
-    <button class="action ghost" onclick="doAction('farm_hire')">👷 Нанять рабочего</button>
-    <button class="action ghost" onclick="doAction('farm_sell')">💰 Продать все лимоны</button>
-  </div>
-</div>
-
-<!-- MINE -->
-<div class="panel" id="panel-mine">
-  <div class="card">
-    <h2>⛏ Шахта</h2>
-    <div class="sub">Кирка уровня <span id="miner-level">1</span> · авто-майнеров <span id="auto-miners">0</span></div>
-    <div class="gauge"><div class="gauge-fill" id="energy-gauge" style="--fill-a: #2b3d43; --fill-b: var(--mine); width:0%"></div><div class="gauge-label">⚡ <span id="energy">0</span>/<span id="max-energy">0</span></div></div>
-    <div class="stat-row">Готово к сбору с авто-майнеров: <b><span id="mine-pending">0</span> ⛰</b></div>
-    <button class="action" style="--btn: var(--mine)" onclick="doAction('mine_click')">⛏ Копнуть</button>
-    <button class="action ghost" onclick="doAction('mine_collect_auto')">📦 Забрать с авто-майнеров</button>
-    <button class="action ghost" onclick="doAction('mine_upgrade')">⬆️ Улучшить кирку — <span id="miner-upgrade-cost">–</span> 🪙</button>
-    <button class="action ghost" onclick="doAction('mine_sell')">💰 Продать всю руду</button>
-  </div>
-</div>
-
-<!-- SPACE -->
-<div class="panel" id="panel-space">
-  <div class="card" id="space-card">
-    <!-- заполняется скриптом -->
-  </div>
-</div>
-
-<!-- BOSS -->
-<div class="panel" id="panel-boss">
-  <div class="card">
-    <h2 id="boss-name">👹 Босс</h2>
-    <div class="sub">Награда за победу: <span id="boss-reward">–</span></div>
-    <div class="gauge"><div class="gauge-fill" id="boss-gauge" style="--fill-a: #5c1f1f; --fill-b: var(--boss); width:0%"></div><div class="gauge-label"><span id="boss-hp">0/0</span> HP</div></div>
-    <button class="action" style="--btn: var(--boss)" id="boss-btn" onclick="doAction('boss_hit')">⚔️ Атаковать</button>
-  </div>
-</div>
-
-<!-- DAILY -->
-<div class="panel" id="panel-daily">
-  <div class="card">
-    <h2>🎁 Ежедневная награда</h2>
-    <div class="sub">Заходи каждый день без пропусков — награда растёт до 7 дня</div>
-    <div class="streak-track" id="streak-track"></div>
-    <div class="stat-row">Стрик: <b><span id="daily-streak">0</span> дн.</b></div>
-    <button class="action" style="--btn: var(--daily)" id="daily-btn" onclick="doAction('daily_claim')">🎁 Забрать награду</button>
-  </div>
-</div>
-
-<!-- SHOP -->
-<div class="panel" id="panel-shop">
+<div class="panel active" id="panel-shop">
   <div class="card">
     <h2>🪙 За монеты</h2>
     <div id="shop-coin-list"></div>
@@ -307,7 +156,26 @@
   </div>
   <div class="card">
     <h2>⭐ Гемы за Telegram Stars</h2>
-    <div class="sub">Оплата звёздами доступна только в чате с ботом — открой бота и нажми «🛒 Магазин».</div>
+    <div class="stars-note">Оплата звёздами открывается прямо в чате с ботом — Telegram не даёт выставлять счета внутри мини-приложений.</div>
+    <div id="shop-star-list"></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-support">
+  <div class="card">
+    <h2>📕 Мини-гайд</h2>
+    <p style="font-size:13px; color:var(--text-dim); line-height:1.5;">
+      Вся игра — в чате с ботом: закрой мини-приложение и используй кнопки внизу
+      (Ферма, Шахта, Космос, Лавочка, Босс, Квесты, Дейли). Здесь, в мини-приложении,
+      удобно быстро купить улучшения или гемы.
+    </p>
+  </div>
+  <div class="card">
+    <h2>🆘 Нужна помощь?</h2>
+    <p style="font-size:13px; color:var(--text-dim); margin-bottom:10px;">
+      Если оплата не прошла, пропал прогресс или нашёл баг — напиши в поддержку:
+    </p>
+    <a class="support-btn" id="support-link" href="#" target="_blank">Написать в поддержку</a>
   </div>
 </div>
 
@@ -320,7 +188,6 @@ tg.expand();
 if (tg.setHeaderColor) { try { tg.setHeaderColor('#171a24'); } catch (e) {} }
 
 const initData = tg.initData || "";
-let state = null;
 
 function toast(msg) {
   const t = document.getElementById("toast");
@@ -347,84 +214,17 @@ async function fetchState() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ initData }),
     });
-    if (!res.ok) {
-      toast("Открой мини-приложение через кнопку в боте");
-      return;
-    }
-    state = await res.json();
-    render(state);
+    if (!res.ok) { toast("Открой через кнопку в боте"); return; }
+    render(await res.json());
   } catch (e) {
     toast("Нет соединения с сервером");
   }
 }
 
-function pct(part, whole) {
-  if (!whole) return 0;
-  return Math.max(0, Math.min(100, (part / whole) * 100));
-}
-
 function render(s) {
   document.getElementById("s-coins").textContent = s.coins;
   document.getElementById("s-gems").textContent = s.gems;
-  document.getElementById("s-lemons").textContent = s.lemons;
-  document.getElementById("s-ore").textContent = s.ore;
 
-  // Farm
-  document.getElementById("farm-level").textContent = s.farm_level;
-  document.getElementById("farm-rate").textContent = s.farm_rate;
-  document.getElementById("farm-workers").textContent = s.farm_workers;
-  document.getElementById("farm-pending").textContent = s.pending_lemons;
-  document.getElementById("farm-upgrade-cost").textContent = s.next_farm_upgrade_cost ?? "MAX";
-  const farmCap = Math.max(s.farm_rate, 1);
-  document.getElementById("farm-gauge").style.width = pct(s.pending_lemons, farmCap * 2) + "%";
-
-  // Mine
-  document.getElementById("miner-level").textContent = s.miner_level;
-  document.getElementById("energy").textContent = s.energy;
-  document.getElementById("max-energy").textContent = s.max_energy;
-  document.getElementById("auto-miners").textContent = s.auto_miners;
-  document.getElementById("mine-pending").textContent = s.pending_ore;
-  document.getElementById("miner-upgrade-cost").textContent = s.next_miner_upgrade_cost ?? "MAX";
-  document.getElementById("energy-gauge").style.width = pct(s.energy, s.max_energy) + "%";
-
-  // Space
-  renderSpace(s);
-
-  // Boss
-  document.getElementById("boss-name").textContent = "👹 " + s.boss_name;
-  document.getElementById("boss-reward").textContent = `${s.boss_reward_coins} 🪙 + ${s.boss_reward_gems} 💎`;
-  document.getElementById("boss-hp").textContent = `${s.boss_hp_left}/${s.boss_hp_max}`;
-  document.getElementById("boss-gauge").style.width = pct(s.boss_hp_left, s.boss_hp_max) + "%";
-  const bossBtn = document.getElementById("boss-btn");
-  if (s.boss_hp_left <= 0) {
-    bossBtn.textContent = "✅ Побеждён — приходи завтра";
-    bossBtn.disabled = true;
-  } else {
-    bossBtn.textContent = "⚔️ Атаковать";
-    bossBtn.disabled = false;
-  }
-
-  // Daily
-  document.getElementById("daily-streak").textContent = s.daily_streak;
-  const track = document.getElementById("streak-track");
-  track.innerHTML = "";
-  for (let i = 1; i <= 7; i++) {
-    const d = document.createElement("div");
-    const done = i <= (s.daily_streak % 7 || (s.daily_claimed_today ? 7 : 0));
-    d.className = "streak-day" + (done ? " done" : "") + (i === 7 ? "" : "");
-    d.textContent = i;
-    track.appendChild(d);
-  }
-  const dailyBtn = document.getElementById("daily-btn");
-  if (s.daily_claimed_today) {
-    dailyBtn.textContent = "✅ Уже забрано сегодня";
-    dailyBtn.disabled = true;
-  } else {
-    dailyBtn.textContent = `🎁 Забрать ${s.daily_next_reward.coins} 🪙${s.daily_next_reward.gems ? " + " + s.daily_next_reward.gems + " 💎" : ""}`;
-    dailyBtn.disabled = false;
-  }
-
-  // Shop
   const coinList = document.getElementById("shop-coin-list");
   coinList.innerHTML = "";
   s.shop_coin_items.forEach(item => {
@@ -434,6 +234,7 @@ function render(s) {
     row.querySelector("button").onclick = () => buyItem("buy_coin", item.id);
     coinList.appendChild(row);
   });
+
   const gemList = document.getElementById("shop-gem-list");
   gemList.innerHTML = "";
   s.shop_gem_items.forEach(item => {
@@ -443,73 +244,48 @@ function render(s) {
     row.querySelector("button").onclick = () => buyItem("buy_gem", item.id);
     gemList.appendChild(row);
   });
-}
 
-function renderSpace(s) {
-  const card = document.getElementById("space-card");
-  if (!s.space_unlocked) {
-    card.innerHTML = `
-      <div class="locked">
-        <div class="lock-icon">🔒</div>
-        <div>Открывается на 3 уровне завода лимонов.<br>Качай ферму, чтобы полететь в космос!</div>
-      </div>`;
-    return;
-  }
-  card.innerHTML = `
-    <h2>🚀 Космическая станция</h2>
-    <div class="sub">Уровень <span>${s.space_level}</span> · ${s.space_rate} ✨/час · экипаж ${s.space_crew}</div>
-    <div class="gauge"><div class="gauge-fill" style="--fill-a: var(--space-dim); --fill-b: var(--space); width:${pct(s.pending_dust, Math.max(s.space_rate,1)*2)}%"></div><div class="gauge-label">${s.pending_dust} ✨ готово</div></div>
-    <button class="action" style="--btn: var(--space)" onclick="doAction('space_collect')">✨ Собрать пыль</button>
-    <button class="action ghost" onclick="doAction('space_upgrade')">⬆️ Улучшить станцию — ${s.next_space_upgrade_cost ?? "MAX"} 🪙</button>
-    <button class="action ghost" onclick="doAction('space_hire')">👨‍🚀 Нанять астронавта</button>
-    <button class="action ghost" onclick="doAction('space_sell')">💰 Продать пыль (${s.stardust})</button>
-  `;
+  const starList = document.getElementById("shop-star-list");
+  starList.innerHTML = "";
+  s.star_packs.forEach(pack => {
+    const row = document.createElement("div");
+    row.className = "shop-item";
+    row.innerHTML = `<span class="title">${pack.title}</span><button class="shop-buy stars">${pack.stars}⭐</button>`;
+    row.querySelector("button").onclick = () => {
+      toast("Открой бота и нажми «🛒 Магазин» → «Купить гемы за Stars»");
+      tg.close();
+    };
+    starList.appendChild(row);
+  });
+
+  document.getElementById("support-link").href = `https://t.me/${(s.support_contact || "").replace("@", "")}`;
 }
 
 const ERROR_MESSAGES = {
   no_coins: c => `Не хватает монет (нужно ${c})`,
   no_gems: c => `Не хватает гемов (нужно ${c})`,
-  no_energy: () => "Не хватает энергии",
-  max_level: () => "Уже максимальный уровень",
-  max_workers: () => "Максимум рабочих",
-  max_crew: () => "Максимум экипажа",
   max_auto_miners: () => "Максимум авто-майнеров",
-  locked: () => "Пока заблокировано",
-  already_defeated: () => "Босс уже повержен, приходи завтра",
-  already_claimed: () => "Награда уже забрана сегодня",
 };
 
-async function doAction(action, item_id) {
+async function buyItem(action, item_id) {
   tg.HapticFeedback?.impactOccurred("light");
-  const body = { initData, action };
-  if (item_id) body.item_id = item_id;
   const res = await fetch("/api/action", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ initData, action, item_id }),
   });
   const r = await res.json();
   if (r.ok === false) {
     const fn = ERROR_MESSAGES[r.reason];
     toast(fn ? fn(r.cost) : "Не получилось");
-  } else if (action === "boss_hit" && r.defeated) {
-    toast(`🎉 Победа! +${r.reward_coins} 🪙 +${r.reward_gems} 💎`);
-    tg.HapticFeedback?.notificationOccurred("success");
-  } else if (action === "daily_claim") {
-    toast(`🎉 +${r.coins} 🪙 +${r.gems} 💎 (стрик ${r.streak})`);
-    tg.HapticFeedback?.notificationOccurred("success");
   } else {
-    toast("Готово ✅");
+    toast("Куплено ✅");
+    tg.HapticFeedback?.notificationOccurred("success");
   }
   fetchState();
 }
 
-async function buyItem(action, item_id) {
-  await doAction(action, item_id);
-}
-
 fetchState();
-setInterval(fetchState, 15000);
 </script>
 </body>
 </html>
