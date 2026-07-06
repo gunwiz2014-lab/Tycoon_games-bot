@@ -21,6 +21,8 @@ async def buy_stars_pack(call: CallbackQuery):
         title=pack["title"],
         description=f"{pack['gems']} гемов для Lemon Tycoon",
         payload=f"gems:{pack_id}",
+        # Для оплаты Telegram Stars provider_token должен быть пустой строкой,
+        # а валюта — специальный код "XTR"
         provider_token="",
         currency="XTR",
         prices=[LabeledPrice(label=pack["title"], amount=pack["stars"])],
@@ -30,12 +32,13 @@ async def buy_stars_pack(call: CallbackQuery):
 
 @router.pre_checkout_query()
 async def pre_checkout(pre_checkout_query: PreCheckoutQuery):
+    # Здесь можно провалидировать заказ (например, ещё раз проверить payload)
     await pre_checkout_query.answer(ok=True)
 
 
 @router.message(F.successful_payment)
 async def successful_payment(message: Message):
-    payload = message.successful_payment.invoice_payload
+    payload = message.successful_payment.invoice_payload  # "gems:gems_120"
     pack_id = payload.split(":", 1)[1]
     pack = next((p for p in config.STAR_GEM_PACKS if p["id"] == pack_id), None)
     if not pack:
