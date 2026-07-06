@@ -182,4 +182,50 @@ QUESTS = [
 ]
 
 # Контакт поддержки, показывается в мини-аппе
-SUPPORT_CONTACT = os.getenv("SUPPORT_CONTACT", "@your_support_username")
+SUPPORT_CONTACT = os.getenv("SUPPORT_CONTACT", "@Kazakhski_dollar")
+
+# Реферальная система
+REFERRAL_REWARD_COINS = 500
+REFERRAL_REWARD_GEMS = 3
+GLOBAL_TOP_SIZE = 10
+
+# ---------------------------------------------------------------------------
+# РЕСТОРАН — четвёртая локация, открывается когда космос прокачан до 2 уровня
+# ---------------------------------------------------------------------------
+RESTAURANT_UNLOCK_SPACE_LEVEL = 2
+
+RESTAURANT_LEVELS = {
+    1: {"upgrade_cost": 0,     "rate_per_hour": 45},
+    2: {"upgrade_cost": 2000,  "rate_per_hour": 120},
+    3: {"upgrade_cost": 5500,  "rate_per_hour": 280},
+    4: {"upgrade_cost": 14000, "rate_per_hour": 620},
+    5: {"upgrade_cost": 35000, "rate_per_hour": 1350},
+}
+RESTAURANT_MAX_LEVEL = max(RESTAURANT_LEVELS)
+
+RESTAURANT_STAFF_BASE_COST = 900
+RESTAURANT_STAFF_COST_GROWTH = 1.6
+RESTAURANT_MAX_STAFF = 10
+RESTAURANT_STAFF_BONUS = 0.25
+
+DISH_SELL_PRICE = 10  # 1 блюдо = 10 монет
+
+# ---------------------------------------------------------------------------
+# ПРОМОКОДЫ
+# ---------------------------------------------------------------------------
+PROMO_CODES = {
+    "BOT2026": {"coins": 500, "gems": 5},
+    "LEMON": {"coins": 200, "gems": 0},
+    "WELCOME": {"coins": 300, "gems": 2},
+}
+
+# ---------------------------------------------------------------------------
+# ГРУППОВОЙ БОСС — общий враг на весь чат, бьют все участники вместе
+# ---------------------------------------------------------------------------
+GROUP_BOSS_HP_MULTIPLIER = 12  # во столько раз больше HP, чем у личного босса того же дня
+GROUP_BOSS_HIT_DAMAGE = 25
+GROUP_BOSS_HIT_ENERGY_COST = 2
+
+# Telegram ID владельца бота — нужен для доступа к /stats.
+# Узнать свой ID можно у @userinfobot
+OWNER_ID = int(os.getenv("OWNER_ID", "0"))
