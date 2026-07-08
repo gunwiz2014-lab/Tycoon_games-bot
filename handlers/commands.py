@@ -8,6 +8,8 @@ import game_logic as gl
 import keyboards as kb
 from .mining import _render_mining
 from .boss import _render_boss
+from .farm import _render_farm
+from .space import _render_space
 
 router = Router()
 
@@ -192,3 +194,104 @@ async def cmd_stats(message: Message):
         f"⭐ Потрачено Stars (всего): {stats['stars_spent']}\n"
     )
     await message.answer(text)
+
+
+@router.message(Command("lemon"), F.chat.type == "private")
+async def cmd_lemon(message: Message):
+    text, markup = await _render_farm(message.from_user.id)
+    await message.answer(text, reply_markup=markup)
+
+
+@router.message(Command("space"), F.chat.type == "private")
+async def cmd_space(message: Message):
+    text, markup = await _render_space(message.from_user.id)
+    await message.answer(text, reply_markup=markup)
+
+
+@router.message(Command("lvl"), F.chat.type == "private")
+async def cmd_lvl(message: Message):
+    user = await gl.sync_user(message.from_user.id)
+    text = (
+        f"🌟 <b>Уровни</b>\n\n"
+        f"🏭 Ферма: {user['farm_level']}/{config.FARM_MAX_LEVEL}\n"
+        f"⛏ Кирка: {user['miner_level']}/{config.MINER_MAX_LEVEL}\n"
+        f"🚀 Космос: {user['space_level']}/{config.SPACE_MAX_LEVEL}\n"
+        f"🏪 Лавочка: {user['trade_level']}/{config.TRADE_MAX_LEVEL}\n"
+        f"🍽 Ресторан: {user['restaurant_level']}/{config.RESTAURANT_MAX_LEVEL}\n"
+    )
+    await message.answer(text)
+
+
+@router.message(Command("power"), F.chat.type == "private")
+async def cmd_power(message: Message):
+    user = await gl.sync_user(message.from_user.id)
+    level_cfg = config.MINER_LEVELS[user["miner_level"]]
+    text = (
+        f"🔥 <b>Мощность кирки</b>\n\n"
+        f"Уровень: {user['miner_level']}/{config.MINER_MAX_LEVEL}\n"
+        f"За клик: {level_cfg['ore_per_click']} руды\n"
+        f"Авто-майнеров: {user['auto_miners']}/{config.AUTO_MINER_MAX}"
+    )
+    await message.answer(text)
+
+
+@router.message(Command("stars"), F.chat.type == "private")
+async def cmd_stars(message: Message):
+    await message.answer(
+        "⭐ <b>Магазин гемов за Telegram Stars</b>\n\nОплата происходит прямо в Telegram.",
+        reply_markup=kb.star_shop_menu(),
+    )
+
+
+@router.message(Command("ecoins"), F.chat.type == "private")
+async def cmd_ecoins(message: Message):
+    await message.answer(
+        "💳 <b>Пополнение</b>\n\nМонеты не покупаются напрямую — зарабатывай их в игре "
+        "или улучшай добычу через 💎 гемы (покупаются за ⭐ Stars командой /stars).",
+        reply_markup=kb.shop_menu(),
+    )
+
+
+@router.message(Command("resetcoins"), F.chat.type == "private")
+async def cmd_resetcoins(message: Message, command: CommandObject):
+    if not config.OWNER_ID or message.from_user.id != config.OWNER_ID:
+        return
+
+    amount = 0
+    if command.args:
+        try:
+            amount = max(0, int(command.args))
+        except ValueError:
+            await message.answer("Использование: /resetcoins СУММА (например /resetcoins 0)")
+            return
+
+    await db.update_user(message.from_user.id, coins=amount)
+    await message.answer(f"✅ Баланс монет сброшен до {amount} 🪙")
+
+
+# --- Заглушки для систем, которые ещё в разработке ---
+COMING_SOON = {
+    "clan": "🏰 Кланы",
+    "exped": "⛺ Экспедиции",
+    "inv": "🎒 Инвентарь",
+    "cases": "📦 Кейсы",
+    "boosts": "⚡ Бустеры",
+    "collections": "🎎 Коллекции",
+    "mats": "🎨 Материалы",
+    "items": "🧤 Предметы",
+    "equip": "🪖 Экипировка",
+    "runes": "🀄 Руны",
+    "pets": "😻 Питомцы",
+    "achiv": "🏆 Ачивки",
+    "skins": "🪄 Скины",
+}
+
+
+def _make_coming_soon_handler(title: str):
+    async def handler(message: Message):
+        await message.answer(f"{title}\n\n🚧 Этот раздел в разработке — скоро будет добавлен!")
+    return handler
+
+
+for _cmd, _title in COMING_SOON.items():
+    router.message(Command(_cmd), F.chat.type == "private")(_make_coming_soon_handler(_title))
